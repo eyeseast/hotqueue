@@ -11,7 +11,7 @@ import threading
 import unittest
 
 from hotqueue import HotQueue
-
+from redis import Redis
 
 class DummySerializer(object):
     """Dummy serializer for use in tests."""
@@ -140,7 +140,26 @@ class HotQueueTestCase(unittest.TestCase):
         self.queue.put(phrase)
         msg = self.queue.get()
         self.assertEqual(msg, phrase)
-
+    
+    def test_from_key(self):
+        """Test the HotQueue.from_key static method"""
+        redis = Redis()
+        queues = {
+            '_test:tens': range(10, 20),
+            '_test:twenties': range(20, 30),
+            '_test:thirties': range(30, 40)
+        }
+        for name, values in queues.items():
+            q = HotQueue(name)
+            q.put(*values)
+        
+        for key in redis.keys('hotqueue:_test:*'):
+            q = HotQueue.from_key(key)
+            self.assertEqual(
+                list(q.consume(block=False)),
+                queues[q.name]
+            )
+        
 
 if __name__ == "__main__":
     unittest.main()
