@@ -3,7 +3,6 @@
 """HotQueue is a Python library that allows you to use Redis as a message queue
 within your Python programs.
 """
-import re
 from functools import wraps
 try:
     import cPickle as pickle
@@ -163,6 +162,6 @@ class HotQueue(object):
         ...     q = HotQueue.from_key(key)
         ...     # do something with your new queue
         """
-        name = re.sub(r'^hotqueue:', '', key)
+        name = key.replace('hotqueue:', '', 1)
         return HotQueue(name, serializer, **kwargs)
 
